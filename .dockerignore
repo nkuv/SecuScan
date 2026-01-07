@@ -1,0 +1,33 @@
+# Git
+.git
+.gitignore
+
+# Python
+__pycache__
+*.pyc
+*.pyo
+*.pyd
+.Python
+env
+venv
+.env
+.venv
+pip-log.txt
+pip-delete-this-directory.txt
+
+# Tests and Coverage
+.tox
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+*.log
+.mypy_cache
+.pytest_cache
+.hypotheses
+
+# IDEs
+.idea
+.vscode
