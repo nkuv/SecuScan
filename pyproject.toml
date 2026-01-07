@@ -1,0 +1,31 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "secuscan"
+version = "0.1.0"
+description = "A dual-platform static vulnerability scanner for Android and Web applications."
+readme = "README.md"
+authors = [
+  { name = "SecuScan Team", email = "secuscan7@gmail.com" },
+]
+requires-python = ">=3.9"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+]
+dependencies = [
+    "click",
+    "rich",
+    "requests",
+    "docker",
+    "pyyaml"
+]
+
+[project.scripts]
+secuscan = "secuscan.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["secuscan*"]
