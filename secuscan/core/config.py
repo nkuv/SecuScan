@@ -1,6 +1,7 @@
 import os
 import yaml
 from typing import Dict, Any, Optional
+from secuscan.core.exceptions import ConfigError
 
 class Config:
     """Holds configuration settings for SecuScan."""
@@ -42,7 +43,8 @@ class Config:
                         reports = yaml_config.get('reports', {})
                         self.output_dir = reports.get('output_dir', self.output_dir)
             except Exception as e:
-                print(f"Warning: Failed to load config file: {e}")
+                print(f"Warning: Failed to load config file: {e}") 
+                # raise ConfigError(f"Failed to load config file: {e}") from e
 
     def load_from_env(self):
         """Load configuration from environment variables."""

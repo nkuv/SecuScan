@@ -18,6 +18,20 @@ def detect_project_type(path: str) -> Tuple[ProjectType, Dict[str, int]]:
         return ProjectType.UNKNOWN, {}
 
     extension_counts = collections.defaultdict(int)
+    
+    # 1. Handle Single File Input
+    if os.path.isfile(path):
+        _, ext = os.path.splitext(path)
+        ext = ext.lower()
+        extension_counts[ext] = 1
+        
+        if ext == '.apk':
+            return ProjectType.ANDROID, dict(extension_counts)
+        elif ext in {'.html', '.js', '.css', '.php', '.ts', '.jsx', '.tsx', '.vue', '.py', '.rb', '.go'}:
+            return ProjectType.WEB, dict(extension_counts)
+        return ProjectType.UNKNOWN, dict(extension_counts)
+
+    # 2. Handle Directory Input
     has_android_manifest = False
     has_web_indicators = False
     
@@ -44,20 +58,26 @@ def detect_project_type(path: str) -> Tuple[ProjectType, Dict[str, int]]:
                 extension_counts[ext.lower()] += 1
 
     # Logic decision
-    if has_android_manifest:
-        return ProjectType.ANDROID, dict(extension_counts)
+    # Weighting System
+    # Manifests are strong indicators (Weight: 10)
+    # Extensions are weak indicators (Weight: 1)
     
-    # If explicit indicators are found, prioritize them
-    if has_web_indicators:
-        return ProjectType.WEB, dict(extension_counts)
+    android_score = 0
+    web_score = 0
+    
+    if has_android_manifest:
+        android_score += 10
         
-    # Fallback to counting extensions
-    web_score = sum(extension_counts[ext] for ext in web_extensions if ext in extension_counts)
-    android_score = sum(extension_counts[ext] for ext in android_extensions if ext in extension_counts)
+    if has_web_indicators:
+        web_score += 10
+        
+    # Add extension counts
+    web_score += sum(extension_counts[ext] for ext in web_extensions if ext in extension_counts)
+    android_score += sum(extension_counts[ext] for ext in android_extensions if ext in extension_counts)
     
     if web_score > android_score:
         return ProjectType.WEB, dict(extension_counts)
-    elif android_score > web_score:
+    elif android_score >= web_score and android_score > 0:
         return ProjectType.ANDROID, dict(extension_counts)
 
     return ProjectType.UNKNOWN, dict(extension_counts)
