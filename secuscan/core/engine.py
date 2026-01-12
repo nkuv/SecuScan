@@ -4,6 +4,8 @@ from secuscan.core.config import config
 
 from secuscan.core.detection import detect_project_type, ProjectType
 from secuscan.core.docker_manager import DockerManager
+from secuscan.scanners.android.scanner import AndroidScanner
+from secuscan.scanners.web.scanner import WebScanner
 
 console = Console()
 
@@ -31,4 +33,24 @@ class ScanEngine:
         else:
             console.print("[yellow]Warning: Docker is not available. Deep scans (MobSF) will be skipped.[/yellow]")
             
-        console.print("[bold blue]Analysis complete.[/bold blue]")
+        # 3. Running Static Scanners
+        results = []
+        if project_type == ProjectType.ANDROID:
+            console.print("Running [bold]Android Static Scanner[/bold]...")
+            scanner = AndroidScanner(self.target)
+            results = scanner.scan()
+        elif project_type == ProjectType.WEB:
+             console.print("Running [bold]Web Static Scanner[/bold]...")
+             scanner = WebScanner(self.target)
+             results = scanner.scan()
+        
+        # 4. Report Results
+        if results:
+            console.print(f"\n[bold red]Found {len(results)} issues:[/bold red]")
+            for issue in results:
+                severity_color = "red" if issue['severity'] == "HIGH" else "yellow"
+                console.print(f" - [{severity_color}]{issue['severity']}[/{severity_color}] in [bold]{issue['file']}[/bold]: {issue['description']}")
+        else:
+            console.print("\n[bold green]No obvious static issues found.[/bold green]")
+
+        console.print("\n[bold blue]Analysis complete.[/bold blue]")

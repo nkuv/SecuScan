@@ -1,0 +1,9 @@
+mobsf:
+  url: "http://localhost:8000"
+  api_key: "" # Leave empty to load from env var MOBSF_API_KEY
+  
+logging:
+  level: "INFO"
+  
+reports:
+  output_dir: "reports"
