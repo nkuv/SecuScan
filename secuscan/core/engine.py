@@ -36,6 +36,12 @@ class ScanEngine:
         # 3. Running Static Scanners
         results = []
         if project_type == ProjectType.ANDROID:
+            if self.docker_manager.is_available():
+                try:
+                    self.docker_manager.ensure_mobsf()
+                except Exception as e:
+                    console.print(f"[yellow]Warning: Failed to start MobSF: {e}. Skipping deep scan.[/yellow]")
+
             console.print("Running [bold]Android Static Scanner[/bold]...")
             scanner = AndroidScanner(self.target)
             results = scanner.scan()
