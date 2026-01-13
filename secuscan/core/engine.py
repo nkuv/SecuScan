@@ -43,6 +43,10 @@ class ScanEngine:
              console.print("Running [bold]Web Static Scanner[/bold]...")
              scanner = WebScanner(self.target)
              results = scanner.scan()
+        else:
+             console.print("[bold red]Error: Unrecognized project type.[/bold red]")
+             console.print("Could not detect whether this is an Android or Web project.")
+             return
         
         # 4. Report Results
         if results:

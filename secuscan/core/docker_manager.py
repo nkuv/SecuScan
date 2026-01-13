@@ -7,6 +7,8 @@ console = Console()
 class DockerManager:
     """Manages Docker container interactions."""
     
+    MOBSF_IMAGE = "opensecurity/mobile-security-framework-mobsf:latest"
+    
     def __init__(self):
         try:
             self.client = docker.from_env()
