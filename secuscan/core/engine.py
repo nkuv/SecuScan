@@ -5,7 +5,7 @@ from secuscan.core.config import config
 from secuscan.core.detection import detect_project_type, ProjectType
 from secuscan.core.docker_manager import DockerManager
 from secuscan.scanners.android.scanner import AndroidScanner
-from secuscan.scanners.web.scanner import WebScanner
+from secuscan.scanners.web import WebScanner
 
 console = Console()
 
