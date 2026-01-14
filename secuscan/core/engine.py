@@ -58,8 +58,8 @@ class ScanEngine:
         if results:
             console.print(f"\n[bold red]Found {len(results)} issues:[/bold red]")
             for issue in results:
-                severity_color = "red" if issue['severity'] == "HIGH" else "yellow"
-                console.print(f" - [{severity_color}]{issue['severity']}[/{severity_color}] in [bold]{issue['file']}[/bold]: {issue['description']}")
+                severity_color = "red" if issue.severity == "HIGH" else "yellow"
+                console.print(f" - [{severity_color}]{issue.severity}[/{severity_color}] in [bold]{issue.file}[/bold]: {issue.description}")
         else:
             console.print("\n[bold green]No obvious static issues found.[/bold green]")
 

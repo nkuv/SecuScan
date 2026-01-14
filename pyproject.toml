@@ -20,7 +20,8 @@ dependencies = [
     "rich",
     "requests",
     "docker",
-    "pyyaml"
+    "pyyaml",
+    "bandit"
 ]
 
 [project.scripts]
