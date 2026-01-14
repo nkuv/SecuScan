@@ -2,6 +2,7 @@ import docker
 from typing import Optional
 import requests
 import time
+import re
 from rich.console import Console
 
 console = Console()
@@ -126,3 +127,26 @@ class DockerManager:
              
         self.pull_image()
         self.start_mobsf()
+
+    def get_mobsf_api_key(self) -> Optional[str]:
+        """Attempts to retrieve the API Key from MobSF container logs."""
+        if not self.is_available():
+            return None
+            
+        try:
+            container = self.client.containers.get("secuscan-mobsf")
+            logs = container.logs().decode('utf-8')
+            
+            # Find all occurrences of the key pattern
+            # Matches: "REST API Key: <Optional ANSI Codes><Key>"
+            # Handle potential ANSI color codes like \x1b[1m
+            matches = re.findall(r'REST API Key:\s+(?:\x1b\[.*?m)?([a-zA-Z0-9]+)', logs)
+            
+            if matches:
+                # remote potential duplicate outputs, take the most recent one (last one)
+                return matches[-1]
+                
+        except Exception as e:
+            # console.print(f"Debug: Failed to grep API Key: {e}")
+            return None
+        return None
