@@ -13,7 +13,7 @@ def main():
 @main.command()
 @click.argument("target", type=click.Path(exists=True))
 @click.option("--debug", is_flag=True, help="Enable debug mode")
-@click.option("--format", type=click.Choice(['console', 'json', 'html'], case_sensitive=False), default="console", help="Output format.")
+@click.option("--format", type=click.Choice(['console', 'table', 'json', 'html'], case_sensitive=False), default="console", help="Output format.")
 @click.option("--output", help="Path to save the report file.")
 def scan(target, debug, format, output):
     """Run a vulnerability scan on a TARGET directory or file."""

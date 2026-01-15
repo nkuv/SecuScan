@@ -1,8 +1,10 @@
 import json
 import os
 from typing import List, Dict
+from datetime import datetime
 from rich.console import Console
 from rich.table import Table
+from jinja2 import Environment, FileSystemLoader
 from secuscan.scanners.models import Vulnerability
 
 console = Console()
@@ -11,20 +13,35 @@ class Reporter:
     """Handles reporting of scan results in various formats."""
     
     @staticmethod
-    def show_console(results: List[Vulnerability]):
+    def show_console(results: List[Vulnerability], use_table: bool = False):
         if not results:
             console.print("\n[bold green]No obvious static issues found.[/bold green]")
             return
 
-        console.print(f"\n[bold red]Found {len(results)} issues:[/bold red]")
-        
-        # Optional: Use a Rich Table for cleaner output?
-        # For now, stick to the existing list format as it's compact.
-        for issue in results:
-            severity_color = "red" if issue.severity == "HIGH" else "yellow" if issue.severity == "MEDIUM" else "green"
-            console.print(f" - [{severity_color}]{issue.severity}[/{severity_color}] in [bold]{issue.file}[/bold]: {issue.description}")
-            if issue.line:
-                console.print(f"   [dim]Line: {issue.line}[/dim]")
+        if use_table:
+            table = Table(title=f"Scan Results ({len(results)} issues found)")
+            table.add_column("Severity", justify="center", style="bold")
+            table.add_column("File", style="cyan")
+            table.add_column("Line", justify="right")
+            table.add_column("Description")
+
+            for issue in results:
+                severity_style = "red" if issue.severity == "HIGH" else "yellow" if issue.severity == "MEDIUM" else "green"
+                table.add_row(
+                    f"[{severity_style}]{issue.severity}[/{severity_style}]",
+                    issue.file,
+                    str(issue.line) if issue.line else "-",
+                    issue.description
+                )
+            console.print(table)
+        else:
+            # Restore original text format
+            console.print(f"\n[bold red]Found {len(results)} issues:[/bold red]")
+            for issue in results:
+                severity_color = "red" if issue.severity == "HIGH" else "yellow" if issue.severity == "MEDIUM" else "green"
+                console.print(f" - [{severity_color}]{issue.severity}[/{severity_color}] in [bold]{issue.file}[/bold]: {issue.description}")
+                if issue.line:
+                    console.print(f"   [dim]Line: {issue.line}[/dim]")
 
     @staticmethod
     def save_json(results: List[Vulnerability], output_path: str):
@@ -35,63 +52,31 @@ class Reporter:
 
     @staticmethod
     def save_html(results: List[Vulnerability], output_path: str):
-        # Simple HTML template
-        html_content = f"""
-        <!DOCTYPE html>
-        <html>
-        <head>
-            <title>SecuScan Report</title>
-            <style>
-                body {{ font-family: Arial, sans-serif; margin: 20px; }}
-                table {{ width: 100%; border-collapse: collapse; }}
-                th, td {{ border: 1px solid #ddd; padding: 8px; text-align: left; }}
-                th {{ background-color: #f2f2f2; }}
-                .HIGH {{ color: red; font-weight: bold; }}
-                .MEDIUM {{ color: orange; font-weight: bold; }}
-                .LOW {{ color: green; }}
-            </style>
-        </head>
-        <body>
-            <h1>SecuScan Vulnerability Report</h1>
-            <p>Found {len(results)} issues.</p>
-            <table>
-                <tr>
-                    <th>Severity</th>
-                    <th>File</th>
-                    <th>Line</th>
-                    <th>Description</th>
-                </tr>
-        """
-        
-        for issue in results:
-            html_content += f"""
-                <tr>
-                    <td class="{issue.severity}">{issue.severity}</td>
-                    <td>{issue.file}</td>
-                    <td>{issue.line if issue.line else 'N/A'}</td>
-                    <td>{issue.description}</td>
-                </tr>
-            """
-        
-        html_content += """
-            </table>
-        </body>
-        </html>
-        """
-        
-        with open(output_path, 'w', encoding='utf-8') as f:
-            f.write(html_content)
-        console.print(f"[green]Report saved to {output_path}[/green]")
+        try:
+            template_dir = os.path.join(os.path.dirname(__file__), 'templates')
+            env = Environment(loader=FileSystemLoader(template_dir))
+            template = env.get_template('report_template.html')
+            
+            html_output = template.render(
+                results=results,
+                generated_at=datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            )
+            
+            with open(output_path, 'w', encoding='utf-8') as f:
+                f.write(html_output)
+                
+            console.print(f"[bold green]HTML Report saved to {output_path}[/bold green]")
+            
+        except Exception as e:
+            console.print(f"[bold red]Failed to generate HTML report: {e}[/bold red]")
 
     def report(self, results: List[Vulnerability], output_format: str = "console", output_path: str = None):
         """Main entry point for reporting."""
         
-        # Always output to console logic? 
-        # If format is JSON/HTML, user probably still wants to see summary in console.
-        # But 'console' format specifically means DETAILED console output.
-        
         if output_format == "console":
-            self.show_console(results)
+            self.show_console(results, use_table=False)
+        elif output_format == "table":
+            self.show_console(results, use_table=True)
         elif output_format == "json":
              if output_path:
                  self.save_json(results, output_path)
