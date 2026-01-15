@@ -19,7 +19,7 @@ class WebScanner(BaseScanner):
             logger.error("Bandit dependency not found.")
             return []
 
-        cmd = ["bandit", "-r", self.target, "-f", "json"]
+        cmd = ["bandit", "-r", self.target, "-f", "json", "-x", "venv,.git,__pycache__,test,build,dist"]
             
         try:
             logger.info(f"Running Bandit on {self.target}...")

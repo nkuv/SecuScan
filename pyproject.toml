@@ -16,12 +16,12 @@ classifiers = [
     "License :: OSI Approved :: MIT License",
 ]
 dependencies = [
-    "click",
-    "rich",
-    "requests",
-    "docker",
-    "pyyaml",
-    "bandit"
+    "click>=8.0.0",
+    "rich>=12.0.0",
+    "requests>=2.28.0",
+    "docker>=6.0.0",
+    "pyyaml>=6.0.0",
+    "bandit>=1.7.0"
 ]
 
 [project.scripts]
