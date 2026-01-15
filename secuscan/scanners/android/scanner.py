@@ -55,13 +55,13 @@ class AndroidScanner(BaseScanner):
         
         for issue in manifest_issues:
             # MobSF manifest entries: {'title':..., 'stat': 'high', 'desc':...}
-             if isinstance(issue, dict) and issue.get('stat') in ['high', 'critical', 'medium']:
-                 self.add_vulnerability(
-                     type=f"MobSF: {issue.get('title')}",
-                     file="AndroidManifest.xml",
-                     severity=issue.get('stat').upper(),
-                     description=issue.get('desc')
-                 )
+            if isinstance(issue, dict) and issue.get('stat') in ['high', 'critical', 'medium']:
+                self.add_vulnerability(
+                    type=f"MobSF: {issue.get('title')}",
+                    file="AndroidManifest.xml",
+                    severity=issue.get('stat').upper(),
+                    description=issue.get('desc')
+                )
 
         # Code Analysis
         code_analysis = report.get('code_analysis', {})

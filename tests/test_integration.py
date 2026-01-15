@@ -9,10 +9,7 @@ def mock_scanner_factory():
     with patch('secuscan.core.engine.ScannerFactory') as mock:
         yield mock
 
-@pytest.fixture
-def mock_scanner_factory():
-    with patch('secuscan.core.engine.ScannerFactory') as mock:
-        yield mock
+
 
 @pytest.fixture
 def mock_detect():
