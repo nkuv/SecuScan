@@ -36,8 +36,8 @@ def scan(target, debug, format, output):
     reporter.report(results, output_format=format, output_path=output)
     
     # CI/CD Exit Code
-    if results:
-        # Exit with 1 if any issues found (security gate)
+    # Exit with 1 if Critical/High issues (Security Gate)
+    if any(issue.severity in ["HIGH", "CRITICAL"] for issue in results):
         sys.exit(1)
     
     sys.exit(0)

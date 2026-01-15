@@ -1,0 +1,26 @@
+version: '3.8'
+
+services:
+  secuscan:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+    image: secuscan:latest
+    volumes:
+      - ../:/scan
+    environment:
+      - MOBSF_URL=http://mobsf:8000
+      - MOBSF_API_KEY=1234567890
+    depends_on:
+      - mobsf
+
+  mobsf:
+    image: opensecurity/mobile-security-framework-mobsf:latest
+    ports:
+      - "8000:8000"
+    volumes:
+      - mobsf-data:/root/.MobSF
+    restart: unless-stopped
+
+volumes:
+  mobsf-data:
