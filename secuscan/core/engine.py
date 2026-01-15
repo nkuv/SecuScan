@@ -17,7 +17,7 @@ class ScanEngine:
         self.docker_manager = DockerManager()
     
     def start(self):
-        """Starts the vulnerability scan."""
+        """Starts the vulnerability scan and returns findings."""
         console.print(f"[bold green]Starting SecuScan analysis on:[/bold green] {self.target}", style="bold")
         
         # 1. Detect Project Type
@@ -57,13 +57,14 @@ class ScanEngine:
              
              results = scanner.scan()
         
-        # 4. Report Results
-        if results:
-            console.print(f"\n[bold red]Found {len(results)} issues:[/bold red]")
-            for issue in results:
-                severity_color = "red" if issue.severity == "HIGH" else "yellow" if issue.severity == "MEDIUM" else "green" 
-                console.print(f" - [{severity_color}]{issue.severity}[/{severity_color}] in [bold]{issue.file}[/bold]: {issue.description}")
-        else:
-            console.print("\n[bold green]No obvious static issues found.[/bold green]")
-
-        console.print("\n[bold blue]Analysis complete.[/bold blue]")
+        # 4. Report Results (Handled by Caller/CLI via Reporter, or return results for CLI to handle)
+        # Actually, refactoring plan said Engine should delegate. 
+        # But CLI needs to pass format options. 
+        # Better design: Engine returns results. CLI handles reporting.
+        # However, to keep 'start()' API simple for now, let's accept format/output in start() or __init__.
+        
+        # Let's return results here so CLI can decide what to do.
+        # Wait, start() current logic does printing.
+        # Let's change start() to return List[Vulnerability] and print nothing (or minimal).
+        
+        return results
