@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "secuscan"
-version = "1.0.1"
+version = "1.0.2"
 description = "A dual-platform static vulnerability scanner for Android and Web applications."
 readme = "README.md"
 authors = [
