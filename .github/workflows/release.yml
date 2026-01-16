@@ -26,7 +26,7 @@ jobs:
         id: meta
         uses: docker/metadata-action@v4
         with:
-          images: secuscan/secuscan
+          images: ${{ secrets.DOCKER_USERNAME }}/secuscan
 
       - name: Build and push Docker image
         uses: docker/build-push-action@v4
