@@ -23,8 +23,15 @@ docker run --rm -v $(pwd):/scan secuscan/secuscan:latest scan /scan
 ```
 *Note: The official image is available at `secuscan/secuscan`.*
 
-### Option 2: Local Installation
-If you prefer to run it as a Python package:
+### Option 2: PyPI (Python Package)
+Install directly via pip:
+
+```bash
+pip install secuscan
+```
+
+### Option 3: Local Installation
+If you prefer to run it from source:
 
 ```bash
 git clone https://github.com/nkuv/SecuScan.git
@@ -34,7 +41,7 @@ source venv/bin/activate  # Windows: venv\Scripts\activate
 pip install -e .
 ```
 
-### Option 3: Build from Source
+### Option 4: Build from Source
 To build the Docker image locally:
 
 ```bash
