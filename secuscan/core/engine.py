@@ -6,6 +6,7 @@ from secuscan.core.config import config
 from secuscan.core.detection import detect_project_type, ProjectType
 from secuscan.core.docker_manager import DockerManager
 from secuscan.scanners.factory import ScannerFactory
+from secuscan.scanners.secrets import SecretScanner
 
 console = Console()
 
@@ -56,6 +57,14 @@ class ScanEngine:
                   console.print("[dim]Uploading and analyzing APK with MobSF (this may take a minute)...[/dim]")
              
              results = scanner.scan()
+
+        # Run Secret Scanner (Global)
+        with console.status("[bold green]Scanning for Hardcoded Secrets...[/bold green]"):
+            secret_scanner = SecretScanner(self.target)
+            secret_results = secret_scanner.scan()
+            if secret_results:
+                console.print(f"[bold red]Found {len(secret_results)} potential secrets![/bold red]")
+                results.extend(secret_results)
         
         # 4. Report Results (Handled by Caller/CLI via Reporter, or return results for CLI to handle)
         # Actually, refactoring plan said Engine should delegate. 
