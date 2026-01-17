@@ -13,7 +13,13 @@ class Reporter:
     """Handles reporting of scan results in various formats."""
     
     @staticmethod
+    def _sort_results(results: List[Vulnerability]) -> List[Vulnerability]:
+        severity_order = {"CRITICAL": 0, "HIGH": 1, "MEDIUM": 2, "LOW": 3}
+        return sorted(results, key=lambda x: severity_order.get(x.severity.upper(), 4))
+
+    @staticmethod
     def show_console(results: List[Vulnerability], use_table: bool = False):
+        results = Reporter._sort_results(results)
         if not results:
             console.print("\n[bold green]No obvious static issues found.[/bold green]")
             return
@@ -26,7 +32,14 @@ class Reporter:
             table.add_column("Description")
 
             for issue in results:
-                severity_style = "red" if issue.severity == "HIGH" else "yellow" if issue.severity == "MEDIUM" else "green"
+                if issue.severity == "CRITICAL":
+                    severity_style = "bold red"
+                elif issue.severity == "HIGH":
+                    severity_style = "red"
+                elif issue.severity == "MEDIUM":
+                    severity_style = "yellow"
+                else:
+                    severity_style = "green"
                 table.add_row(
                     f"[{severity_style}]{issue.severity}[/{severity_style}]",
                     issue.file,
@@ -38,13 +51,21 @@ class Reporter:
             # Restore original text format
             console.print(f"\n[bold red]Found {len(results)} issues:[/bold red]")
             for issue in results:
-                severity_color = "red" if issue.severity == "HIGH" else "yellow" if issue.severity == "MEDIUM" else "green"
+                if issue.severity == "CRITICAL":
+                    severity_color = "bold red"
+                elif issue.severity == "HIGH":
+                    severity_color = "red"
+                elif issue.severity == "MEDIUM":
+                    severity_color = "yellow"
+                else:
+                    severity_color = "green"
                 console.print(f" - [{severity_color}]{issue.severity}[/{severity_color}] in [bold]{issue.file}[/bold]: {issue.description}")
                 if issue.line:
                     console.print(f"   [dim]Line: {issue.line}[/dim]")
 
     @staticmethod
     def save_json(results: List[Vulnerability], output_path: str):
+        results = Reporter._sort_results(results)
         data = [issue.__dict__ for issue in results]
         with open(output_path, 'w', encoding='utf-8') as f:
             json.dump(data, f, indent=4)
@@ -52,6 +73,7 @@ class Reporter:
 
     @staticmethod
     def save_html(results: List[Vulnerability], output_path: str):
+        results = Reporter._sort_results(results)
         try:
             template_dir = os.path.join(os.path.dirname(__file__), 'templates')
             env = Environment(loader=FileSystemLoader(template_dir))
