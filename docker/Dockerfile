@@ -1,5 +1,5 @@
 # Build Stage
-FROM python:3.9-slim as builder
+FROM python:3.9-slim AS builder
 
 WORKDIR /app
 
@@ -11,7 +11,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 COPY . .
 
 # Build wheel
-RUN pip install build && python -m build
+RUN rm -rf dist/* && pip install build && python -m build
 
 # Run Stage
 FROM python:3.9-slim

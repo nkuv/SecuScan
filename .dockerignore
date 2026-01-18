@@ -15,6 +15,11 @@ venv
 pip-log.txt
 pip-delete-this-directory.txt
 
+# Build Artifacts
+dist
+build
+*.egg-info
+
 # Tests and Coverage
 .tox
 .coverage
