@@ -18,10 +18,9 @@ You can use the pre-built image directly from Docker Hub without installing Pyth
 # Pull the latest image
 docker pull secuscan/secuscan:latest
 
-# Run a scan on the current directory
-docker run --rm -v $(pwd):/scan secuscan/secuscan:latest scan /scan
+# Run a scan (replace /path/to/project with your target)
+docker run --rm -it -v ${PWD}:/src secuscan/secuscan:latest scan /src
 ```
-*Note: The official image is available at `secuscan/secuscan`.*
 
 ### Option 2: PyPI (Python Package)
 Install directly via pip:
@@ -46,7 +45,7 @@ To build the Docker image locally:
 
 ```bash
 docker build -f docker/Dockerfile -t secuscan .
-docker run --rm -v $(pwd):/scan secuscan scan /scan
+docker run --rm -it -v ${PWD}:/src secuscan scan /src
 ```
 
 ## Usage
