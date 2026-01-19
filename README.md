@@ -11,26 +11,32 @@ A dual-platform static vulnerability scanner for **Android** and **Web** applica
 
 ## Getting Started
 
-### Option 1: Docker (Easiest)
-You can use the pre-built image directly from Docker Hub without installing Python dependencies.
-
-```bash
-# Pull the latest image
-docker pull secuscan/secuscan:latest
-
-# Run a scan (replace /path/to/project with your target)
-docker run --rm -it -v ${PWD}:/src secuscan/secuscan:latest scan /src
-```
-
-### Option 2: PyPI (Python Package)
+### Option 1: PyPI (Recommended)
 Install directly via pip:
 
 ```bash
 pip install secuscan
+secuscan scan .
 ```
 
+### Option 2: Docker
+
+```bash
+curl -sL https://raw.githubusercontent.com/nkuv/SecuScan/main/docker/docker-compose.yml | docker-compose -f - run --rm secuscan scan /scan
+```
+
+
+<details>
+<summary>Alternative: Direct Docker Run (Web only)</summary>
+
+```bash
+docker pull secuscan/secuscan:latest
+docker run --rm -v ${PWD}:/scan secuscan/secuscan:latest scan /scan
+```
+
+</details>
+
 ### Option 3: Local Installation
-If you prefer to run it from source:
 
 ```bash
 git clone https://github.com/nkuv/SecuScan.git
@@ -38,14 +44,6 @@ cd SecuScan
 python3 -m venv venv
 source venv/bin/activate  # Windows: venv\Scripts\activate
 pip install -e .
-```
-
-### Option 4: Build from Source
-To build the Docker image locally:
-
-```bash
-docker build -f docker/Dockerfile -t secuscan .
-docker run --rm -it -v ${PWD}:/src secuscan scan /src
 ```
 
 ## Usage
