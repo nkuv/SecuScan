@@ -47,7 +47,7 @@ class MobSFAdapter:
             with open(file_path, 'rb') as f:
                 # Explicitly define filename and content type
                 files = {'file': (os.path.basename(file_path), f, 'application/octet-stream')}
-                response = requests.post(upload_url, headers=self._get_headers(), files=files)
+                response = requests.post(upload_url, headers=self._get_headers(), files=files, timeout=60)
             
             if response.status_code != 200:
                 logger.error(f"MobSF Upload Failed: {response.text}")
@@ -79,7 +79,7 @@ class MobSFAdapter:
         
         try:
             logger.info(f"Initiating scan for hash {file_hash}...")
-            response = requests.post(scan_url, headers=self._get_headers(), data=data)
+            response = requests.post(scan_url, headers=self._get_headers(), data=data, timeout=120)
             response.raise_for_status()
             logger.info("Scan completed successfully.")
             return response.json()
@@ -100,7 +100,7 @@ class MobSFAdapter:
         
         try:
             logger.info(f"Fetching report for hash {file_hash}...")
-            response = requests.post(report_url, headers=self._get_headers(), data=data)
+            response = requests.post(report_url, headers=self._get_headers(), data=data, timeout=30)
             response.raise_for_status()
             return response.json()
             
@@ -119,7 +119,7 @@ class MobSFAdapter:
         data = {'hash': file_hash}
         
         try:
-            requests.post(delete_url, headers=self._get_headers(), data=data)
+            requests.post(delete_url, headers=self._get_headers(), data=data, timeout=30)
             logger.info(f"Deleted scan data for {file_hash}.")
         except Exception as e:
             logger.warning(f"Failed to delete scan data: {e}")
