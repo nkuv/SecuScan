@@ -5,6 +5,7 @@ from secuscan.core.config import config
 
 from secuscan.core.detection import detect_project_type, ProjectType
 from secuscan.core.docker_manager import DockerManager
+from secuscan.core.sonarqube_manager import SonarQubeManager
 from secuscan.scanners.factory import ScannerFactory
 from secuscan.scanners.secrets import SecretScanner
 
@@ -16,6 +17,7 @@ class ScanEngine:
     def __init__(self, target: str):
         self.target = target
         self.docker_manager = DockerManager()
+        self.sonarqube_manager = SonarQubeManager()
     
     def start(self):
         """Starts the vulnerability scan and returns findings."""
@@ -58,6 +60,17 @@ class ScanEngine:
              
              results = scanner.scan()
 
+        # Run SonarQube Scan (Global)
+        if self.sonarqube_manager.is_available():
+            with console.status("[bold green]Running SonarQube Analysis...[/bold green]"):
+                try:
+                    self.sonarqube_manager.ensure_sonarqube()
+                    self.sonarqube_manager.run_scan(self.target)
+                except Exception as e:
+                    console.print(f"[yellow]Warning: SonarQube scan failed: {e}[/yellow]")
+        else:
+             console.print("[dim]Docker not available - skipping SonarQube scan.[/dim]")
+
         # Run Secret Scanner (Global)
         with console.status("[bold green]Scanning for Hardcoded Secrets...[/bold green]"):
             secret_scanner = SecretScanner(self.target)
@@ -65,15 +78,5 @@ class ScanEngine:
             if secret_results:
                 console.print(f"[bold red]Found {len(secret_results)} potential secrets![/bold red]")
                 results.extend(secret_results)
-        
-        # 4. Report Results (Handled by Caller/CLI via Reporter, or return results for CLI to handle)
-        # Actually, refactoring plan said Engine should delegate. 
-        # But CLI needs to pass format options. 
-        # Better design: Engine returns results. CLI handles reporting.
-        # However, to keep 'start()' API simple for now, let's accept format/output in start() or __init__.
-        
-        # Let's return results here so CLI can decide what to do.
-        # Wait, start() current logic does printing.
-        # Let's change start() to return List[Vulnerability] and print nothing (or minimal).
         
         return results

@@ -22,6 +22,12 @@ class Config:
         self.mobsf_api_key = None
         self.output_dir = "reports"
         
+        # SonarQube settings
+        self.sonar_url = "http://localhost:9000"
+        self.sonar_login = "admin"
+        self.sonar_password = "Secuscan@2026"
+        self.sonar_token = "squ_62e4d6fcedaa5e177e545cbb30eaf5e48259fe0f"
+        
         self.load_config()
         self.load_from_env()
         self._initialized = True
@@ -42,6 +48,13 @@ class Config:
                         
                         reports = yaml_config.get('reports', {})
                         self.output_dir = reports.get('output_dir', self.output_dir)
+                        
+                        # SonarQube config
+                        sonar = yaml_config.get('sonarqube', {})
+                        self.sonar_url = sonar.get('url', self.sonar_url)
+                        self.sonar_login = sonar.get('login', self.sonar_login)
+                        self.sonar_password = sonar.get('password', self.sonar_password)
+                        self.sonar_token = sonar.get('token', self.sonar_token)
             except Exception as e:
                 print(f"Warning: Failed to load config file: {e}") 
                 # raise ConfigError(f"Failed to load config file: {e}") from e
@@ -51,5 +64,9 @@ class Config:
         self.debug = os.getenv("SECUSCAN_DEBUG", "false").lower() == "true"
         self.mobsf_url = os.getenv("MOBSF_URL", self.mobsf_url)
         self.mobsf_api_key = os.getenv("MOBSF_API_KEY", self.mobsf_api_key)
+        self.sonar_url = os.getenv("SONAR_URL", self.sonar_url)
+        self.sonar_login = os.getenv("SONAR_LOGIN", self.sonar_login)
+        self.sonar_password = os.getenv("SONAR_PASSWORD", self.sonar_password)
+        self.sonar_token = os.getenv("SONAR_TOKEN", self.sonar_token)
 
 config = Config()
