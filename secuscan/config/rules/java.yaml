@@ -1,0 +1,105 @@
+rules:
+  # ─── SQL Injection ────────────────────────────────────────────────────────────
+
+  # Case 1: Concatenation directly inside executeQuery/execute
+  - id: java-sql-injection-direct
+    languages: [java]
+    severity: ERROR
+    message: "SQL Injection: String concatenation inside SQL call. Use PreparedStatement with '?' placeholders."
+    patterns:
+      - pattern-either:
+          - pattern: $STMT.executeQuery($X + $Y)
+          - pattern: $STMT.execute($X + $Y)
+          - pattern: $STMT.executeUpdate($X + $Y)
+
+  # Case 2: Concatenation built in a variable, then passed to query
+  - id: java-sql-injection-via-variable
+    languages: [java]
+    severity: ERROR
+    message: "SQL Injection: SQL query built with string concatenation. Use PreparedStatement with '?' placeholders."
+    patterns:
+      - pattern: |
+          String $QUERY = $A + $INPUT;
+          ...
+          $STMT.executeQuery($QUERY);
+      - pattern: |
+          $QUERY = $A + $INPUT;
+          ...
+          $STMT.executeQuery($QUERY);
+
+  # ─── Command Injection ────────────────────────────────────────────────────────
+
+  - id: java-command-injection
+    languages: [java]
+    severity: ERROR
+    message: "Command Injection: User-controlled data in exec(). Use a fixed command with arguments array instead."
+    patterns:
+      - pattern-either:
+          - pattern: Runtime.getRuntime().exec($X + $Y)
+          - pattern: $RUNTIME.exec($X + $Y)
+          - pattern: Runtime.getRuntime().exec(new String[]{..., $INPUT, ...})
+
+  # ─── Path Traversal ───────────────────────────────────────────────────────────
+
+  - id: java-path-traversal
+    languages: [java]
+    severity: ERROR
+    message: "Path Traversal: User-controlled path component. Validate with Path.normalize() and check it stays within base dir."
+    patterns:
+      - pattern-either:
+          - pattern: new FileReader($A + $B)
+          - pattern: new java.io.FileReader($A + $B)
+          - pattern: new File($A + $B)
+          - pattern: new java.io.File($A + $B)
+          - pattern: new FileInputStream($A + $B)
+          - pattern: new java.io.FileInputStream($A + $B)
+
+  # ─── Hardcoded Credentials ────────────────────────────────────────────────────
+
+  - id: java-hardcoded-credential
+    languages: [java]
+    severity: WARNING
+    message: "Hardcoded credential: Move secrets to environment variables or a secrets manager (e.g. Vault)."
+    patterns:
+      - pattern-either:
+          - pattern: String $VAR = "...";
+          - pattern: private static final String $VAR = "...";
+      - metavariable-regex:
+          metavariable: $VAR
+          regex: (?i).*(password|passwd|secret|api_key|apikey|token|access_key|auth).*
+
+  # ─── Insecure Deserialization ─────────────────────────────────────────────────
+
+  - id: java-insecure-deserialization
+    languages: [java]
+    severity: ERROR
+    message: "Insecure Deserialization: Deserializing untrusted ObjectInputStream can lead to Remote Code Execution."
+    patterns:
+      - pattern-either:
+          - pattern: new ObjectInputStream($DATA)
+          - pattern: new java.io.ObjectInputStream($DATA)
+
+  # ─── Weak Randomness ──────────────────────────────────────────────────────────
+
+  - id: java-weak-random
+    languages: [java]
+    severity: WARNING
+    message: "Weak Random: java.util.Random is predictable. Use java.security.SecureRandom for security-sensitive values."
+    patterns:
+      - pattern-either:
+          - pattern: new java.util.Random()
+          - pattern: new Random()
+
+  # ─── XSS (Reflected) ─────────────────────────────────────────────────────────
+
+  - id: java-xss-html-response
+    languages: [java]
+    severity: WARNING
+    message: "Potential XSS: User input reflected in HTML output without encoding. Use StringEscapeUtils.escapeHtml4()."
+    patterns:
+      - pattern-either:
+          - pattern: $RESPONSE.getWriter().print($A + $INPUT)
+          - pattern: $RESPONSE.getWriter().println($A + $INPUT)
+          - pattern: return "<html>" + $INPUT
+          - pattern: return "<html>" + $INPUT + $B
+          - pattern: return $A + $INPUT + $B;

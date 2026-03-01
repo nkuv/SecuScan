@@ -76,8 +76,12 @@ class Reporter:
         results = Reporter._sort_results(results)
         try:
             template_dir = os.path.join(os.path.dirname(__file__), 'templates')
-            env = Environment(loader=FileSystemLoader(template_dir))
-            template = env.get_template('report_template.html')
+            # Fix for Bandit B701: Enable autoescape for HTML templates
+            env = Environment(
+                loader=FileSystemLoader(template_dir),
+                autoescape=True
+            )
+            template = env.get_template("report_template.html")
             
             html_output = template.render(
                 results=results,

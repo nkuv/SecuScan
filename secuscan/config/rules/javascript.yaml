@@ -1,0 +1,28 @@
+rules:
+  - id: js-eval-injection
+    languages: [javascript, typescript]
+    severity: ERROR
+    message: "Code Injection: eval() with user-controlled input allows arbitrary code execution."
+    pattern: eval($INPUT)
+
+  - id: js-innerHTML
+    languages: [javascript, typescript]
+    severity: WARNING
+    message: "XSS: Setting innerHTML with user-controlled data allows HTML injection."
+    pattern: $EL.innerHTML = $INPUT
+
+  - id: js-document-write
+    languages: [javascript, typescript]
+    severity: WARNING
+    message: "XSS: document.write() with user input can lead to cross-site scripting."
+    patterns:
+      - pattern: document.write($INPUT)
+      - pattern: document.writeln($INPUT)
+
+  - id: js-command-injection
+    languages: [javascript, typescript]
+    severity: ERROR
+    message: "Command Injection: User input passed to exec(). Use execFile() or sanitize input."
+    patterns:
+      - pattern: exec($INPUT)
+      - pattern: child_process.exec($INPUT)

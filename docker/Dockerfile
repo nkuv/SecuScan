@@ -29,6 +29,9 @@ COPY --from=builder /app/dist/*.whl .
 # Install package
 RUN pip install *.whl
 
+# Install optional scanners
+RUN pip install semgrep
+
 # Create a user for security
 RUN useradd -m secuscan
 USER secuscan

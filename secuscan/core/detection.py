@@ -39,8 +39,8 @@ def detect_project_type(path: str) -> Tuple[ProjectType, Dict[str, int]]:
     web_indicators = {'package.json', 'index.html', 'yarn.lock'}
     exclude_dirs = {'.git', 'node_modules', 'venv', 'env', '__pycache__', 'build', 'dist', '.gradle', '.idea'}
     
-    web_extensions = {'.html', '.js', '.css', '.php', '.ts', '.jsx', '.tsx', '.vue', '.py', '.rb', '.go'}
-    android_extensions = {'.java', '.kt', '.xml', '.gradle'}
+    web_extensions = {'.html', '.js', '.css', '.php', '.ts', '.jsx', '.tsx', '.vue', '.py', '.rb', '.go', '.java', '.kt'}
+    android_extensions = {'.gradle', '.xml'}  # Java/Kotlin alone != Android; AndroidManifest.xml is the real signal
     
     for root, dirs, files in os.walk(path):
         # Filter out noisy directories

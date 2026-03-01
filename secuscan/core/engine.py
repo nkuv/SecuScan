@@ -7,6 +7,7 @@ from secuscan.core.detection import detect_project_type, ProjectType
 from secuscan.core.docker_manager import DockerManager
 from secuscan.scanners.factory import ScannerFactory
 from secuscan.scanners.secrets import SecretScanner
+from secuscan.scanners.web.semgrep import SemgrepScanner
 
 console = Console()
 
@@ -43,8 +44,12 @@ class ScanEngine:
                     console.print("[yellow]Warning: Docker is not available. Deep scans (MobSF) will be skipped.[/yellow]")
             
         # 3. Running Scanners
+        if project_type == ProjectType.UNKNOWN:
+            console.print("[yellow]Warning: Could not detect project type. Defaulting to WEB scanner.[/yellow]")
+            project_type = ProjectType.WEB
+
         scanner = ScannerFactory.get_scanner(project_type, self.target)
-        
+
         if not scanner:
              console.print("[bold red]Error: Unrecognized project type.[/bold red]")
              console.print("Could not detect whether this is an Android or Web project.")
@@ -65,15 +70,14 @@ class ScanEngine:
             if secret_results:
                 console.print(f"[bold red]Found {len(secret_results)} potential secrets![/bold red]")
                 results.extend(secret_results)
-        
-        # 4. Report Results (Handled by Caller/CLI via Reporter, or return results for CLI to handle)
-        # Actually, refactoring plan said Engine should delegate. 
-        # But CLI needs to pass format options. 
-        # Better design: Engine returns results. CLI handles reporting.
-        # However, to keep 'start()' API simple for now, let's accept format/output in start() or __init__.
-        
-        # Let's return results here so CLI can decide what to do.
-        # Wait, start() current logic does printing.
-        # Let's change start() to return List[Vulnerability] and print nothing (or minimal).
-        
+
+        # Run Semgrep (Web projects only, excludes Python — covered by Bandit)
+        if project_type == ProjectType.WEB:
+            with console.status("[bold green]Running Semgrep multi-language scan...[/bold green]"):
+                semgrep_scanner = SemgrepScanner(self.target)
+                semgrep_results = semgrep_scanner.scan()
+                if semgrep_results:
+                    console.print(f"[bold red]Semgrep found {len(semgrep_results)} issues![/bold red]")
+                    results.extend(semgrep_results)
+
         return results
