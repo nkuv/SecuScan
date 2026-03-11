@@ -41,13 +41,36 @@ class MobSFAdapter:
             raise ValueError("MobSF API Key is not configured.")
 
         upload_url = f"{self.server_url}/api/v1/upload"
+        temp_zip_path = None
+        target_file = file_path
         
         try:
-            logger.info(f"Uploading {os.path.basename(file_path)} to MobSF...")
-            with open(file_path, 'rb') as f:
+            if os.path.isdir(file_path):
+                import tempfile
+                import zipfile
+                logger.info("Target is a directory. Creating a sanitized temporary zip archive for MobSF upload...")
+                temp_dir = tempfile.mkdtemp()
+                temp_zip_path = os.path.join(temp_dir, "mobsf_upload.zip")
+                
+                with zipfile.ZipFile(temp_zip_path, 'w', zipfile.ZIP_DEFLATED) as zipf:
+                    for root, dirs, files in os.walk(file_path):
+                        # Filter out hidden folders and common build outputs
+                        dirs[:] = [d for d in dirs if not d.startswith('.') and d not in ('build', 'dist', 'node_modules', '__pycache__')]
+                        for file in files:
+                            # Also skip hidden files like .gitignore, .DS_Store which cause MobSF errors
+                            if not file.startswith('.'):
+                                f_path = os.path.join(root, file)
+                                arcname = os.path.relpath(f_path, file_path)
+                                zipf.write(f_path, arcname)
+                
+                target_file = temp_zip_path
+
+            logger.info(f"Uploading {os.path.basename(target_file)} to MobSF...")
+            with open(target_file, 'rb') as f:
                 # Explicitly define filename and content type
-                files = {'file': (os.path.basename(file_path), f, 'application/octet-stream')}
-                response = requests.post(upload_url, headers=self._get_headers(), files=files, timeout=60)
+                files = {'file': (os.path.basename(target_file), f, 'application/octet-stream')}
+                # Increased timeout for potentially large source zips
+                response = requests.post(upload_url, headers=self._get_headers(), files=files, timeout=600)
             
             if response.status_code != 200:
                 logger.error(f"MobSF Upload Failed: {response.text}")
@@ -65,6 +88,14 @@ class MobSFAdapter:
         except Exception as e:
             logger.error(f"Error during upload: {e}")
             raise
+        finally:
+            if temp_zip_path and os.path.exists(temp_zip_path):
+                try:
+                    import shutil
+                    os.remove(temp_zip_path)
+                    shutil.rmtree(os.path.dirname(temp_zip_path))
+                except Exception as e:
+                    logger.debug(f"Failed to clean up temp zip: {e}")
 
     def scan_file(self, file_hash: str) -> dict:
         """

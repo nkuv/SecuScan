@@ -13,8 +13,8 @@ class AndroidScanner(BaseScanner):
     def scan(self) -> List[Vulnerability]:
         mobsf = MobSFAdapter()
         
-        # 1. Try MobSF Scan if it's an APK
-        if self.target.endswith('.apk') and os.path.exists(self.target):
+        # 1. Try MobSF Scan if it's an APK or an Android Source Directory
+        if (self.target.endswith('.apk') and os.path.isfile(self.target)) or os.path.isdir(self.target):
             try:
                 # Upload
                 logger.info("Uploading APK to MobSF...")
